@@ -16,7 +16,8 @@ def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def upsert_excel(): 
-    try : 
+    try :
+        print("Idhar aaya")
         session_helper = SessionHelper()
         session = session_helper.get_session()
 

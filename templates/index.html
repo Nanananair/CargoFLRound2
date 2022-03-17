@@ -16,9 +16,9 @@
     <div style="margin-top:5%;"></div>
 
     <div class="container" style="width:60%;">
-        <form action="/action_page.php">
+        <form enctype="form/multipart" method="POST">
             <label for="myfile">Select a file:</label>
-            <input type="file" id="myfile" name="myfile"><br><br>
+            <input required="required" type="file" id="myfile" name="myfile"><br><br>
             <input id="postSubmit" type="button" value="Submit">
         </form>
         <table id="example">
@@ -50,17 +50,17 @@
         $(document).ready(function() {
             // Post Submit Func
             $('#postSubmit').click(
-                function() {
-                    var files = document.getElementById('myfile').files[0];
+                function(e) {
+                    e.preventDefault();
+                    var formData = new FormData();
+                    formData.append('file', $('#myfile')[0].files[0]);
+                    console.log(formData)
                     $.ajax({
                         url: "/upsert_excel",
                         method: "POST",
-                        beforeSend: function(request) {
-                            request.setRequestHeader("Content-Type", "multipart/form-data");
-                        },
-                        data: {
-                            file: files,
-                        },
+                        data: formData,
+                        processData: false,
+                        contentType: false,
                         success: function(response) {
                             console.log(response)
                             window.location.reload();
