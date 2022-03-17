@@ -17,11 +17,16 @@ def allowed_file(filename):
 
 def upsert_excel(): 
     try :
-        print("Idhar aaya")
         session_helper = SessionHelper()
         session = session_helper.get_session()
 
         file = request.files['file']
+
+        #Save all the active docket IDs in a list to check for updates
+        active_dockets = []
+        current_dockets = session.query(Shipment)
+        for docket in current_dockets:
+            active_dockets.append(docket.docket)
 
         if file.filename  == '': 
             resp = jsonify({'message' : 'No file part in the request'})
@@ -34,13 +39,17 @@ def upsert_excel():
                 resp.status_code = 400
                 return resp
             else:
-                print(df)
                 for row in df.itertuples():
-                    #TODO: Reappearing data?
-                    shipment_item = Shipment(docket= row.docket, lsp_lr= row.lsp_lr, invoice= row.invoice, pickup_date=row.pickup_date, edd= row.edd, actual_delivery_date=row.actual_delivery_date, consigner=row.consigner, consignee=row.consignee, from_city=row.from_city, to_city=row.to_city)
-                    session.add(shipment_item)
+                    # If the docket number already exists update the attributes
+                    if str(row.docket) in active_dockets:
+                        print("Duplicate found!")
+                        session.query(Shipment).filter(Shipment.docket == str(row.docket)).update({'lsp_lr': row.lsp_lr, "invoice": row.invoice,"pickup_date": row.pickup_date, "edd": row.edd, "actual_delivery_date": row.actual_delivery_date, "consigner": row.consigner,"consignee": row.consignee,"from_city": row.from_city,"to_city": row.to_city })
+                    else:
+                        # If it's a new docket number create new entry
+                        shipment_item = Shipment(docket= row.docket, lsp_lr= row.lsp_lr, invoice= row.invoice, pickup_date=row.pickup_date, edd= row.edd, actual_delivery_date=row.actual_delivery_date, consigner=row.consigner, consignee=row.consignee, from_city=row.from_city, to_city=row.to_city)
+                        session.add(shipment_item)
                 session.commit()
-                session.refresh(shipment_item)
+                # session.refresh(shipment_item)
                 return Response(status=201, response= "Shipment Items created succesfully")
         else: 
             resp = jsonify({'message' : 'Allowed file types are xls, xlsx, xlsm, xlsb, odf, ods, odt'})
