@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cargo FL Coding Round</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <!-- Bootstrap 5 JS -->
+    <script src="js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div style="margin-top:5%;"></div>
+
+    <div class="container" style="width:60%;">
+        <form action="/action_page.php">
+            <label for="myfile">Select a file:</label>
+            <input type="file" id="myfile" name="myfile"><br><br>
+            <input id="postSubmit" type="button" value="Submit">
+        </form>
+        <table id="example">
+            <thead>
+                <tr>
+                    <th scope="col">Docket</th>
+                    <th scope="col">LSP LR</th>
+                    <th scope="col">Invoice</th>
+                    <th scope="col">Pickup Date</th>
+                    <th scope="col">EDD</th>
+                    <th scope="col">Actual Delivery Date</th>
+                    <th scope="col">Consigner</th>
+                    <th scope="col">Consignee</th>
+                    <th scope="col">From City</th>
+                    <th scope="col">To City</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <!-- TABLE -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.1/css/dataTables.bootstrap5.min.css">
+    <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.11.1/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.11.1/js/dataTables.bootstrap5.min.js"></script>
+
+    <script type="text/javascript" class="init">
+        $(document).ready(function() {
+            // Post Submit Func
+            $('#postSubmit').click(
+                function() {
+                    var input = document.getElementById("myfile").value;
+                    $.ajax({
+                        url: "/upsert_excel",
+                        method: "POST",
+                        beforeSend: function(request) {
+    request.setRequestHeader("Authority", authorizationToken);
+  },
+                        data: {
+                            file: input,
+                        },
+                        success: function(response) {
+                            console.log(response)
+                            window.location.reload();
+                        },
+                        error: function() {
+                            alert("error");
+                        },
+                    });
+                }
+            )
+
+
+            // Create a new DataTable object
+            table = $('#example').DataTable({
+                "lengthMenu": [
+                    [15, 50, 100, -1],
+                    [15, 50, 100, "All"]
+                ],
+                "pagingType": "simple",
+                scrollY: 400,
+                scrollCollapse: true,
+                order: [
+                    [0, 'asc'],
+                    [3, 'desc']
+                ],
+                ajax: {
+                    url: '/get_shipments',
+                },
+                columns: [{
+                    data: 'docket'
+                }, {
+                    data: 'lsp_lr'
+                }, {
+                    data: 'invoice'
+                }, {
+                    data: 'pickup_date'
+                }, {
+                    data: 'edd'
+                }, {
+                    data: 'actual_delivery_date'
+                }, {
+                    data: 'consigner'
+                }, {
+                    data: 'consignee'
+                }, {
+                    data: 'from_city'
+                }, {
+                    data: 'to_city'
+                }]
+            })
+        });
+
+        function addEmp() {
+            var input = document.querySelector('input[type="file"]')
+            $.ajax({
+                url: "/upsert_excel",
+                method: "POST",
+                data: {
+                    file: input,
+                },
+                success: function(response) {
+                    console.log(response)
+                    window.location.reload();
+                },
+                error: function() {
+                    alert("error");
+                },
+            });
+        }
+    </script>
+
+</body>
